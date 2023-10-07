@@ -1,0 +1,84 @@
+<style>
+    div {
+        width: 500px;
+        height: 400px;
+        border: 2px solid black;
+        position: relative;
+    }
+ 
+    video {
+        width: 500px;
+        height: 400px;
+        object-fit: cover;
+    }
+    
+    canvas {
+        width: 500px;
+        height: 400px;
+        object-fit: cover;
+    }
+</style>
+<div>
+    <video id="vid"></video>
+</div>
+<br />
+<button id="but" autoplay>
+    Open WebCam
+</button>
+<canvas id="canvas"></canvas>
+
+<script>
+
+function Inverse(pix) {
+  for (var i = 0, n = pix.length; i < n; i += 1) {
+    pix[i] = 255 - pix[i];
+  }
+}
+
+const canvas = document.querySelector("canvas");
+const ctx = canvas.getContext("2d");
+
+    document.addEventListener("DOMContentLoaded", () => {
+        let but = document.getElementById("but");
+        let video = document.getElementById("vid");
+        let mediaDevices = navigator.mediaDevices;
+        vid.muted = true;
+        but.addEventListener("click", () => {
+ 
+            // Accessing the user camera and video.
+            mediaDevices
+                .getUserMedia({
+                    video: true,
+                    audio: true,
+                })
+                .then((stream) => {
+ 
+                    // Changing the source of video to current stream.
+                    video.srcObject = stream;
+                    video.addEventListener("loadedmetadata", () => {
+                        video.play();
+                        function step() {
+                          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                          var imgd = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                          var pix = imgd.data;
+                          // 0-4 is RGBA - assume 5 is next pixel
+                          //alert(pix[0]);
+                          // Loop over each pixel and invert the color.
+                          for (var i = 0, n = pix.length; i < n; i += 4) {
+                              pix[i  ] = 255 - pix[i  ]; // red
+                              pix[i+1] = 255 - pix[i+1]; // green
+                              pix[i+2] = 255 - pix[i+2]; // blue
+                              // i+3 is alpha (the fourth element)
+                          }
+
+                          // Draw the ImageData at the given (x,y) coordinates.
+                          ctx.putImageData(imgd, 0, 0);
+                          requestAnimationFrame(step);
+                        }
+                        requestAnimationFrame(step);
+                    });
+                })
+                .catch(alert);
+        });
+    });
+</script>
